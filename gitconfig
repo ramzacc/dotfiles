@@ -1,0 +1,21 @@
+[init]
+	defaultBranch = main
+  editor = nvim
+
+[user]
+  name = "Ramza"
+  email = "ramza@ramza.cc"
+
+[credential]
+  helper = "cache --timeout=28800"
+
+[core]
+  pager = delta
+
+[merge]
+  conflictStyle = zdiff3
+
+[delta]
+  navigate = true
+  side-by-side = true
+  line-numbers = true
