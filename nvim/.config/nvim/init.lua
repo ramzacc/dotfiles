@@ -66,6 +66,13 @@ vim.lsp.config("lua_ls", {
   root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
 })
 
+table.insert(lsps, "ts_ls")
+vim.lsp.config("ts_ls", {
+  cmd = { "typescript-language-server", "--stdio" },
+  filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+  root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+})
+
 vim.lsp.enable(lsps)
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)

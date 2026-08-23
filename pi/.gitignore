@@ -1,4 +1,4 @@
-agent/bin/
-agent/sessions/
-agent/auth.json
-agent/models-store.json
+.pi/agent/bin/
+.pi/agent/sessions/
+.pi/agent/auth.json
+.pi/agent/models-store.json
