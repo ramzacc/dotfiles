@@ -11,11 +11,17 @@
     "sway/window"
   ],
   "modules-right": [
+    "sway/language",
     "network",
     "pulseaudio",
     "battery",
     "clock"
   ],
+
+  "sway/language": {
+    "format": "{shortDescription}",
+    "tooltip-format": "{long}"
+  },
 
   "sway/workspaces": {
     "disable-scroll": true,
