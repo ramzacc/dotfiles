@@ -8,7 +8,7 @@
     "sway/workspaces"
   ],
   "modules-center": [
-    "sway/window"
+    "custom/todoist"
   ],
   "modules-right": [
     "sway/language",
@@ -29,12 +29,16 @@
     "format": "{name}"
   },
 
-  "sway/window": {
+  "custom/todoist": {
+    "exec": "python3 \"${XDG_CONFIG_HOME:-$HOME/.config}/waybar/todoist.py\"",
+    "return-type": "json",
+    "interval": 60,
+    "signal": 8,
+    "exec-on-event": false,
+    "format": "{}",
     "max-length": 70,
-    "rewrite": {
-      "(.*) — Mozilla Firefox": "$1",
-      "(.*) - Visual Studio Code": "$1"
-    }
+    "on-click": "python3 \"${XDG_CONFIG_HOME:-$HOME/.config}/waybar/todoist.py\" --select",
+    "on-click-right": "/var/lib/snapd/snap/bin/todoist"
   },
 
   "network": {
@@ -73,8 +77,7 @@
 
   "clock": {
     "interval": 1,
-    "format": "{:%a %d %b  %H:%M}",
-    "format-alt": "{:%Y-%m-%d  %H:%M:%S}",
+    "format": "{:%H:%M}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>"
   }
 }
