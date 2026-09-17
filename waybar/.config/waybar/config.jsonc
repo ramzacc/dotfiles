@@ -8,14 +8,13 @@
     "sway/workspaces"
   ],
   "modules-center": [
-    "custom/todoist"
+    "clock"
   ],
   "modules-right": [
     "sway/language",
     "network",
     "pulseaudio",
-    "battery",
-    "clock"
+    "battery"
   ],
 
   "sway/language": {
@@ -27,18 +26,6 @@
     "disable-scroll": true,
     "all-outputs": false,
     "format": "{name}"
-  },
-
-  "custom/todoist": {
-    "exec": "python3 \"${XDG_CONFIG_HOME:-$HOME/.config}/waybar/todoist.py\"",
-    "return-type": "json",
-    "interval": 60,
-    "signal": 8,
-    "exec-on-event": false,
-    "format": "{}",
-    "max-length": 70,
-    "on-click": "python3 \"${XDG_CONFIG_HOME:-$HOME/.config}/waybar/todoist.py\" --select",
-    "on-click-right": "/var/lib/snapd/snap/bin/todoist"
   },
 
   "network": {
@@ -76,8 +63,15 @@
   },
 
   "clock": {
-    "interval": 1,
-    "format": "{:%H:%M}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    "interval": 60,
+    "format": "{:%d/%m/%Y · %H:%M}",
+    "tooltip": true,
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "calendar": {
+      "mode": "month",
+      "format": {
+        "today": "<span color='#93c5fd'><b><u>{}</u></b></span>"
+      }
+    }
   }
 }
