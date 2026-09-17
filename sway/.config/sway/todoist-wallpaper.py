@@ -29,7 +29,7 @@ BLUE, GOLD, RED = "#93c5fd", "#fbbf24", "#fca5a5"
 
 def request(token, endpoint, params=None, sync=False):
     encoded = urllib.parse.urlencode(params or {})
-    # Sync POST only reads the filters resource: no mutation commands are sent.
+    # Sync POST only reads resources: no mutation commands are sent.
     req = urllib.request.Request(
         API + endpoint + ("?" + encoded if encoded and not sync else ""),
         data=encoded.encode() if sync else None,
@@ -61,14 +61,19 @@ def fetch():
         token = (CONFIG / "todoist/token").read_text().strip()
     if not token:
         raise ValueError("Missing token")
-    filters = request(token, "sync", {"sync_token": "*", "resource_types": '["filters"]'}, sync=True)["filters"]
-    saved = next(f for f in filters if not f.get("is_deleted")
+    resources = request(token, "sync", {
+        "sync_token": "*", "resource_types": '["filters", "projects", "sections"]',
+    }, sync=True)
+    saved = next(f for f in resources["filters"] if not f.get("is_deleted")
                  and normalize(f["name"]) == "proximas deadlines")
+    projects = {str(p["id"]): p["name"] for p in resources["projects"] if not p.get("is_deleted")}
+    sections = {str(s["id"]): s["name"] for s in resources["sections"] if not s.get("is_deleted")}
     today = tasks(token, TODAY_QUERY)
     deadlines = tasks(token, saved["query"])
     today.sort(key=lambda t: ((t.get("due") or {}).get("date", ""), t.get("day_order") or 0))
     deadlines.sort(key=lambda t: ((t.get("deadline") or {}).get("date", "9999"), -t.get("priority", 1)))
     return {"today": today, "deadlines": deadlines, "filter": saved["name"],
+            "projects": projects, "sections": sections,
             "updated": datetime.now().isoformat(timespec="minutes")}
 
 
@@ -87,9 +92,14 @@ def fit_lines(draw, text, face, width, maximum=None):
     text = " ".join(text.split())
     lines = []
     while text and (maximum is None or len(lines) < maximum):
-        length = len(text)
-        while length > 1 and draw.textlength(text[:length], font=face) > width:
-            length -= 1
+        low, high = 1, len(text)
+        while low < high:
+            middle = (low + high + 1) // 2
+            if draw.textlength(text[:middle], font=face) <= width:
+                low = middle
+            else:
+                high = middle - 1
+        length = low
         if length < len(text) and " " in text[:length]:
             length = text.rfind(" ", 0, length) or length
         lines.append(text[:length].rstrip())
@@ -148,13 +158,82 @@ def relative_date(value, deadline=False, today=None):
     return label, days
 
 
-def render(data, stale, width, height, tick, destination):
+def task_location(task, data):
+    project = data.get("projects", {}).get(str(task.get("project_id")), "")
+    section = data.get("sections", {}).get(str(task.get("section_id")), "")
+    return " > ".join(name for name in (project, section) if name)
+
+
+def column_rows(draw, entries, data, column, width, available_height, unit):
+    # Prefer full descriptions; compact only when the complete column needs it.
+    for body_size, detail_size, small_size, gap, description_limit in (
+        (23, 20, 18, 30, None),
+        (21, 18, 16, 18, None),
+        (19, 16, 15, 12, 2),
+        (18, 15, 14, 10, 1),
+    ):
+        body, detail, small = (font(unit(n)) for n in (body_size, detail_size, small_size))
+        rows = []
+        compact = description_limit is not None
+        for task in entries:
+            lines = []
+
+            def add(text, face, size, color, limit=None):
+                lines.extend((line, face, color, unit(size + 6)) for line in
+                             fit_lines(draw, text, face, width, limit))
+
+            add(readable_text(task["content"]), body, body_size, TEXT, 2 if compact else None)
+            add(task_location(task, data), small, small_size, MUTED, 1 if compact else None)
+            due = (task.get("due") or {}).get("date", "")
+            deadline = (task.get("deadline") or {}).get("date", "")
+            if deadline:
+                label, days = relative_date(deadline, deadline=True)
+                if column == 0:
+                    label = "Deadline · " + label.lower()
+                add(label, small, small_size, RED if days <= 0 else GOLD)
+            if due:
+                label, days = relative_date(due)
+                if column == 1 or days != 0 or "T" in due:
+                    if days < 0:
+                        label = "Pendiente desde " + label
+                    elif column == 1:
+                        label = "Programada para " + label
+                    else:
+                        label = label[0].upper() + label[1:]
+                    add(label, small, small_size, RED if days < 0 else MUTED)
+            details = readable_text(task.get("description") or "")
+            if details.strip():
+                if compact:
+                    add(details, detail, detail_size, MUTED, description_limit)
+                else:
+                    lines.append(("", detail, MUTED, unit(8)))
+                    for paragraph in details.splitlines():
+                        if paragraph.strip():
+                            add(paragraph, detail, detail_size, MUTED)
+                        else:
+                            lines.append(("", detail, MUTED, unit(12)))
+            rows.append((task.get("priority"), lines))
+        spacing = unit(gap)
+        heights = [sum(line[3] for line in lines) + spacing for _, lines in rows]
+        if sum(heights) <= available_height:
+            return rows, spacing, 0
+    # Never cycle or split tasks. Reserve space for an honest overflow count.
+    used, visible = 0, 0
+    for height in heights:
+        if used + height > available_height - unit(32):
+            break
+        used += height
+        visible += 1
+    return rows[:visible], spacing, len(rows) - visible
+
+
+def render(data, stale, width, height, destination):
     # Logical output dimensions keep text consistent on HiDPI screens.
     scale = min(width / 1920, height / 1080)
     unit = lambda n: max(1, round(n * scale))
     image = Image.new("RGB", (width, height), BG)
     draw = ImageDraw.Draw(image)
-    heading, body, description, small = (font(unit(n)) for n in (27, 23, 20, 18))
+    heading, body, small = (font(unit(n)) for n in (27, 23, 18))
     margin, gap = unit(80), unit(32)
     top, bottom = unit(100), height - unit(70)
     column_width = (width - 2 * margin - gap) // 2
@@ -166,69 +245,22 @@ def render(data, stale, width, height, tick, destination):
         x = margin + column * (column_width + gap)
         draw.rounded_rectangle((x, top, x + column_width, bottom), radius=unit(18), fill=PANEL)
         draw.text((x + unit(28), top + unit(24)), name, font=heading, fill=accent)
-        # Measure each task instead of reserving empty rows or clipping descriptions.
-        pages, used = [[]], 0
-        for task in entries:
-            lines = [(line, body, TEXT, unit(31)) for line in
-                     fit_lines(draw, readable_text(task["content"]), body, text_width)]
-            due = (task.get("due") or {}).get("date", "")
-            deadline = (task.get("deadline") or {}).get("date", "")
-            if deadline:
-                label, days = relative_date(deadline, deadline=True)
-                if column == 0:
-                    label = "Deadline · " + label.lower()
-                lines.append((label, small, RED if days <= 0 else GOLD, unit(29)))
-            if due:
-                label, days = relative_date(due)
-                # Today's heading already supplies the date for today's tasks.
-                if column == 1 or days != 0 or "T" in due:
-                    if days < 0:
-                        label = "Pendiente desde " + label
-                    elif column == 1:
-                        label = "Programada para " + label
-                    else:
-                        label = label[0].upper() + label[1:]
-                    lines.append((label, small, RED if days < 0 else MUTED, unit(29)))
-            details = readable_text(task.get("description") or "")
-            if details.strip():
-                lines.append(("", description, MUTED, unit(8)))
-                for paragraph in details.splitlines():
-                    wrapped = fit_lines(draw, paragraph, description, text_width)
-                    lines.extend((line, description, MUTED, unit(28)) for line in wrapped)
-                    if not wrapped:
-                        lines.append(("", description, MUTED, unit(12)))
-            # Long descriptions continue on the next page instead of disappearing.
-            row_height = sum(line[3] for line in lines) + unit(30)
-            if pages[-1] and used + row_height > available_height:
-                pages.append([])
-                used = 0
-            while lines:
-                chunk, chunk_height = [], 0
-                while lines and chunk_height + lines[0][3] + unit(30) <= available_height - used:
-                    line = lines.pop(0)
-                    chunk.append(line)
-                    chunk_height += line[3]
-                pages[-1].append((task.get("priority"), chunk))
-                used += chunk_height + unit(30)
-                if lines:
-                    pages.append([])
-                    used = 0
-        page = tick % len(pages)
-        if len(pages) > 1:
-            draw.text((x + column_width - unit(85), top + unit(30)),
-                      f"{page + 1}/{len(pages)}", font=small, fill=MUTED)
+        rows, spacing, hidden = column_rows(draw, entries, data, column, text_width, available_height, unit)
         if not entries:
             message = "Sin tareas" if data.get("updated") else "Esperando a Todoist…"
             draw.text((x + unit(28), top + unit(92)), message, font=body, fill=MUTED)
         y = top + unit(92)
-        for priority, lines in pages[page]:
+        for priority, lines in rows:
             priority_color = {4: RED, 3: GOLD, 2: BLUE}.get(priority, MUTED)
             draw.ellipse((x + unit(28), y + unit(9), x + unit(36), y + unit(17)), fill=priority_color)
             text_x = x + unit(52)
             for line, face, color, line_height in lines:
                 draw.text((text_x, y), line, font=face, fill=color)
                 y += line_height
-            y += unit(30)
+            y += spacing
+        if hidden:
+            label = f"+{hidden} {'tarea más' if hidden == 1 else 'tareas más'} en Todoist"
+            draw.text((x + unit(52), bottom - unit(48)), label, font=small, fill=MUTED)
     if stale:
         draw.text((margin, height - unit(43)), "Sin sincronizar", font=small, fill=MUTED)
     temporary = destination.with_suffix(".tmp")
@@ -241,10 +273,10 @@ def outputs():
     return [o for o in json.loads(result.stdout) if o.get("active")]
 
 
-def update(data, stale, tick, apply):
+def update(data, stale, apply):
     for output in outputs():
         destination = CACHE / (hashlib.sha256(output["name"].encode()).hexdigest()[:16] + ".png")
-        render(data, stale, output["rect"]["width"], output["rect"]["height"], tick, destination)
+        render(data, stale, output["rect"]["width"], output["rect"]["height"], destination)
         if apply:
             command = f'output {json.dumps(output["name"])} bg {json.dumps(str(destination))} fill'
             result = subprocess.run(["swaymsg", "-r", command], check=True, capture_output=True, text=True)
@@ -291,7 +323,6 @@ def main():
         data = json.loads(state.read_text())
     except (OSError, ValueError):
         data = {}
-    tick = 0
     while not stopped.is_set():
         wake.clear()
         stale = False
@@ -302,7 +333,7 @@ def main():
             # Keep the last successful snapshot; never log tokens or API responses.
             stale = True
         try:
-            update(data, stale, tick, apply=not args.preview)
+            update(data, stale, apply=not args.preview)
         except (OSError, subprocess.SubprocessError):
             # The Sway session has ended; do not leave a polling process behind.
             return
@@ -310,7 +341,6 @@ def main():
             if stale:
                 raise SystemExit("Todoist refresh failed; rendered the cached/empty view.")
             return
-        tick += 1
         wake.wait(60)
 
 
