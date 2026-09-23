@@ -1,0 +1,6 @@
+#!/bin/sh
+# Keep volume/brightness indicators and low-priority notices quiet.
+case "${DUNST_STACK_TAG:-}" in
+    volume*|brightness*) exit 0 ;;
+esac
+exec /usr/bin/paplay /usr/share/sounds/freedesktop/stereo/message.oga
