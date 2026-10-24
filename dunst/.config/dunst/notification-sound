@@ -1,5 +1,5 @@
 #!/bin/sh
-# Keep volume/brightness indicators and low-priority notices quiet.
+# Volume and brightness OSDs stay silent.
 case "${DUNST_STACK_TAG:-}" in
     volume*|brightness*) exit 0 ;;
 esac
