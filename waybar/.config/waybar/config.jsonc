@@ -23,9 +23,7 @@
   },
 
   "sway/workspaces": {
-    "disable-scroll": true,
-    "all-outputs": false,
-    "format": "{name}"
+    "disable-scroll": true
   },
 
   "network": {
@@ -37,7 +35,7 @@
     "tooltip-format-wifi": "{ifname}\n{ipaddr}/{cidr}\n{signalStrength}% signal",
     "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
     "tooltip-format-disconnected": "No network connection",
-    "on-click": "foot -e bash -lc 'nmcli device status; printf \"\\nPress Enter to close...\"; read -r'",
+    "on-click": "foot nmtui",
     "on-click-right": "bash -lc 'if [ \"$(nmcli -t -f WIFI general)\" = enabled ]; then nmcli radio wifi off; else nmcli radio wifi on; fi'"
   },
 
@@ -65,7 +63,6 @@
   "clock": {
     "interval": 60,
     "format": "{:%d/%m/%Y · %H:%M}",
-    "tooltip": true,
     "tooltip-format": "<tt>{calendar}</tt>",
     "calendar": {
       "mode": "month",

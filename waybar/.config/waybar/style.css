@@ -36,18 +36,6 @@ window#waybar {
   background: #fca5a5;
 }
 
-#mode {
-  padding: 0 10px;
-  color: #18181b;
-  background: #fbbf24;
-}
-
-#custom-todoist {
-  padding: 0 12px;
-  color: #a1a1aa;
-}
-
-#custom-bluetooth,
 #network,
 #pulseaudio,
 #battery,
@@ -55,8 +43,6 @@ window#waybar {
   padding: 0 9px;
 }
 
-#custom-bluetooth:hover,
-#custom-todoist:hover,
 #network:hover,
 #pulseaudio:hover,
 #battery:hover,
@@ -65,16 +51,9 @@ window#waybar {
   color: #f4f4f5;
 }
 
-#custom-bluetooth.off,
-#custom-todoist.missing-token,
-#custom-todoist.error,
 #network.disconnected,
 #pulseaudio.muted {
   color: #71717a;
-}
-
-#custom-bluetooth.connected {
-  color: #93c5fd;
 }
 
 #battery.warning {
