@@ -11,8 +11,8 @@ vim.opt.relativenumber = true
 
 vim.opt.clipboard = "unnamedplus,unnamed"
 
-vim.keymap.set("n", "<leader>w", vim.cmd.write, {})
-vim.keymap.set("n", "<leader>q", vim.cmd.quit, {})
+vim.keymap.set("n", "<leader>w", vim.cmd.write)
+vim.keymap.set("n", "<leader>q", vim.cmd.quit)
 
 -- Create new file
 vim.keymap.set("n", "<leader><C-n>", function()
@@ -40,47 +40,41 @@ fzf.setup({
   },
 })
 
-vim.keymap.set("n", "<leader>ff", fzf.files, {})
-vim.keymap.set("n", "<leader>fg", fzf.live_grep, {})
-vim.keymap.set("n", "<leader>fb", fzf.buffers, {})
-vim.keymap.set("n", "<leader>gs", fzf.git_status, {})
+vim.keymap.set("n", "<leader>ff", fzf.files)
+vim.keymap.set("n", "<leader>fg", fzf.live_grep)
+vim.keymap.set("n", "<leader>fb", fzf.buffers)
+vim.keymap.set("n", "<leader>gs", fzf.git_status)
 
 -- Matching pairs
 vim.pack.add({ "https://github.com/windwp/nvim-autopairs" })
 require("nvim-autopairs").setup()
 
 -- LSP
-local lsps = {}
-
-table.insert(lsps, "clangd")
 vim.lsp.config("clangd", {
   cmd = { "clangd" },
   filetypes = { "c", "cpp" },
   root_markers = { "compile_commands.json", "compile_flags.txt", ".git" },
 })
 
-table.insert(lsps, "lua_ls")
 vim.lsp.config("lua_ls", {
   cmd = { "lua-language-server" },
   filetypes = { "lua" },
   root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
 })
 
-table.insert(lsps, "ts_ls")
 vim.lsp.config("ts_ls", {
   cmd = { "typescript-language-server", "--stdio" },
   filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
   root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 })
 
-vim.lsp.enable(lsps)
+vim.lsp.enable({ "clangd", "lua_ls", "ts_ls" })
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local opts = { buffer = args.buf }
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
     vim.keymap.set("i", "<C-k>", vim.lsp.buf.signature_help, opts)
@@ -91,6 +85,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
       autotrigger = false,
     })
 
-    vim.keymap.set("i", "<C-Space>", function() vim.lsp.completion.get() end, opts)
+    vim.keymap.set("i", "<C-Space>", vim.lsp.completion.get, opts)
   end,
 })
