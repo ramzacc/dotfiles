@@ -14,18 +14,6 @@ vim.opt.clipboard = "unnamedplus,unnamed"
 vim.keymap.set("n", "<leader>w", vim.cmd.write)
 vim.keymap.set("n", "<leader>q", vim.cmd.quit)
 
--- Create new file
-vim.keymap.set("n", "<leader><C-n>", function()
-  vim.ui.input({ prompt = "New file: " }, function(path)
-    if not path or path == "" then
-      return
-    end
-
-    vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
-    vim.cmd.edit(vim.fn.fnameescape(path))
-  end)
-end)
-
 vim.cmd.colorscheme("retrobox")
 
 -- Fuzzy finding
