@@ -16,6 +16,10 @@ vim.keymap.set("n", "<leader>q", vim.cmd.quit)
 
 vim.cmd.colorscheme("retrobox")
 
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+  command = "checktime",
+})
+
 -- Fuzzy finding
 vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
 local fzf = require("fzf-lua")
