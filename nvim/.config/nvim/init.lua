@@ -20,6 +20,8 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
   command = "checktime",
 })
 
+vim.cmd.packadd("nvim.difftool")
+
 -- Fuzzy finding
 vim.pack.add({ "https://github.com/ibhagwan/fzf-lua" })
 local fzf = require("fzf-lua")
