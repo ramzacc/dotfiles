@@ -67,6 +67,8 @@ end
 
 require("diffview").setup({
   use_icons = false,
+  show_help_hints = false,
+  signs = { fold_open = "▾ ", fold_closed = "▸ " },
   hooks = { diff_buf_win_enter = setup_diff_window },
 })
 
