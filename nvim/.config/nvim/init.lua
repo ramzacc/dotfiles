@@ -26,7 +26,7 @@ vim.opt.foldtext = ""
 vim.opt.undofile = true
 vim.opt.clipboard = "unnamedplus,unnamed"
 
-vim.cmd.colorscheme("retrobox")
+vim.cmd.colorscheme("habamax")
 vim.api.nvim_set_hl(0, "netrwTreeBar", { link = "Comment" })
 vim.api.nvim_set_hl(0, "netrwClassify", { link = "Comment" })
 
