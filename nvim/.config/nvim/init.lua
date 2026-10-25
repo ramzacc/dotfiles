@@ -1,6 +1,6 @@
 vim.g.mapleader = " "
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+vim.g.netrw_banner = 0
+vim.g.netrw_liststyle = 3
 
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
@@ -33,6 +33,7 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 
 vim.keymap.set("n", "<leader>w", vim.cmd.write)
 vim.keymap.set("n", "<leader>q", vim.cmd.quit)
+vim.keymap.set("n", "<leader>ft", "<cmd>Explore .<cr>")
 
 vim.pack.add({
   "https://github.com/ibhagwan/fzf-lua",
