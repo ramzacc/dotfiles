@@ -65,11 +65,14 @@ local function setup_diff_window(_, window, context)
   }, ",")
 end
 
+local close_diff = { "n", "<leader>q", "<cmd>DiffviewClose<cr>" }
+
 require("diffview").setup({
   use_icons = false,
   show_help_hints = false,
   signs = { fold_open = "▾ ", fold_closed = "▸ " },
   hooks = { diff_buf_win_enter = setup_diff_window },
+  keymaps = { view = { close_diff }, file_panel = { close_diff } },
 })
 
 local function branch_name(picker_line)
