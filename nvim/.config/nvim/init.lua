@@ -48,8 +48,26 @@ vim.keymap.set("n", "<leader>fg", fzf.live_grep)
 vim.keymap.set("n", "<leader>fb", fzf.buffers)
 
 -- Diffs
+vim.api.nvim_set_hl(0, "DiffOldSide", { bg = "#3b1f22" })
+vim.api.nvim_set_hl(0, "DiffNewSide", { bg = "#1f3626" })
+
+local function setup_diff_window(_, window, context)
+  local color = context.symbol == "a" and "DiffOldSide" or "DiffNewSide"
+
+  vim.wo[window].foldcolumn = "0"
+  vim.wo[window].statusline = "%t %m%=%l,%c  %P"
+  vim.wo[window].winhl = table.concat({
+    "DiffAdd:" .. color,
+    "DiffChange:" .. color,
+    "DiffText:" .. color,
+    "DiffTextAdd:" .. color,
+    "DiffDelete:Normal",
+  }, ",")
+end
+
 require("diffview").setup({
   use_icons = false,
+  hooks = { diff_buf_win_enter = setup_diff_window },
 })
 
 local function branch_name(picker_line)
