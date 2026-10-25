@@ -1,6 +1,7 @@
 vim.g.mapleader = " "
 vim.g.netrw_banner = 0
 vim.g.netrw_liststyle = 3
+vim.g.netrw_list_hide = [[^\.git/$]]
 
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
@@ -26,6 +27,8 @@ vim.opt.undofile = true
 vim.opt.clipboard = "unnamedplus,unnamed"
 
 vim.cmd.colorscheme("retrobox")
+vim.api.nvim_set_hl(0, "netrwTreeBar", { link = "Comment" })
+vim.api.nvim_set_hl(0, "netrwClassify", { link = "Comment" })
 
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
   command = "checktime",
