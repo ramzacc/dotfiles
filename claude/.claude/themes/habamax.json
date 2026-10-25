@@ -1,0 +1,22 @@
+{
+  "name": "Habamax",
+  "base": "dark",
+  "overrides": {
+    "text": "#c7c7c7",
+    "inactive": "#767676",
+    "subtle": "#4e4e4e",
+    "claude": "#af87af",
+    "claudeShimmer": "#d7afd7",
+    "suggestion": "#87afaf",
+    "permission": "#5f87af",
+    "promptBorder": "#4e4e4e",
+    "promptBorderShimmer": "#767676",
+    "success": "#5faf5f",
+    "error": "#d75f87",
+    "warning": "#af875f",
+    "diffAdded": "#273923",
+    "diffRemoved": "#2f1f1a",
+    "diffAddedWord": "#273923",
+    "diffRemovedWord": "#2f1f1a"
+  }
+}
