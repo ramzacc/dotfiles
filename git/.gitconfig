@@ -7,10 +7,6 @@
 
 [core]
   editor = nvim
-  pager = delta
-
-[interactive]
-  diffFilter = delta --color-only
 
 [credential]
   helper = cache --timeout=28800
@@ -18,7 +14,3 @@
 [merge]
   conflictStyle = zdiff3
 
-[delta]
-  navigate = true
-  side-by-side = true
-  line-numbers = true
