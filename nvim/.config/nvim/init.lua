@@ -16,6 +16,12 @@ vim.opt.smartcase = true
 vim.opt.linebreak = true
 vim.opt.breakindent = true
 
+vim.opt.mouse = ""
+vim.opt.showtabline = 0
+vim.opt.laststatus = 3
+vim.opt.fillchars = { diff = " ", fold = " ", eob = " " }
+vim.opt.foldtext = ""
+
 vim.opt.undofile = true
 vim.opt.clipboard = "unnamedplus,unnamed"
 
