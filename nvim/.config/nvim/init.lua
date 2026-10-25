@@ -43,3 +43,17 @@ fzf.setup({
 vim.keymap.set("n", "<leader>ff", fzf.files)
 vim.keymap.set("n", "<leader>fg", fzf.live_grep)
 vim.keymap.set("n", "<leader>fb", fzf.buffers)
+
+vim.pack.add({ "https://github.com/sindrets/diffview.nvim" })
+require("diffview").setup({ use_icons = false })
+vim.keymap.set("n", "<leader>gd", function()
+  fzf.git_branches({
+    fzf_opts = { ["--no-multi"] = false, ["--multi"] = true },
+    actions = {
+      enter = function(selected)
+        local refs = vim.tbl_map(function(line) return line:match("^[%*+]*%s*([^%s]+)") end, selected)
+        vim.cmd.DiffviewOpen(table.concat(refs, ".."))
+      end,
+    },
+  })
+end)
